@@ -7,11 +7,8 @@ const catcher_width = 100;
 let bottom_border_factor = 20;
 let catcher_x;
 let play_again_button;
-var cloud_backgroud;
 
 let colorArray = ["#ffd046","#ef233c","#235789","#7ee081","#98c1d9","#6b5ca5","#028A42","#009fb7","#f9a03f","#00171f"]
-
-// tester
 
 // ellipise falling from top of the screen to the bottom    
 // random color, speed, and x cordinate assigned
@@ -36,8 +33,8 @@ class Faller {
     }
     // display faller in the current position
     display() {
-        fill(this.color);
-        ellipse(this.x_pos, this.y_pos, faller_width, faller_height);
+        imageMode(CENTER);
+        image(lettuce_topping, this.x_pos, this.y_pos, faller_width, faller_height);
     }
     // check if faller is colliding with the top of the stack
     // if so add to stack and remove from active fallers
@@ -60,9 +57,15 @@ class Faller {
     }
 }
 
+// load background image
+function preload() {
+    lettuce_topping = loadImage("images/lettuce_leaf.png")
+}
+
 // set p5 canvas
 function setup() {
     createCanvas(windowWidth, windowHeight);
+    lettuce_topping.resize(faller_width, faller_height);
     frameRate(30);
     catcher_x = windowWidth / 2;
 }
@@ -73,21 +76,8 @@ function draw() {
     // clear canvas
     clear();
 
-    // set backgroud
-    imageMode(CENTER);
-    image(cloud_backgroud, width/2, height/2, width, height);
-
     // run fallers and catcher
     runFallingStack();
-    
-    // listen for mouse movement
-    onMouseMove();
-}
-
-// load background image
-function preload() {
-    cloud_backgroud = loadImage("clouds.jpg")
-    night_background = loadImage("night.jpeg")
 }
 
 // function to add new Faller to sky
@@ -125,18 +115,7 @@ function runFallingStack() {
         faller.isColliding();
     }
 
-    // control catcher with arrow keys
-    if(keyIsDown(LEFT_ARROW))
-        catcher_x -= 15
-    else if (keyIsDown(RIGHT_ARROW))
-        catcher_x += 15
-    
-    // allow catcher to wrap around the screen
-    if( catcher_x - catcher_width/2 > windowWidth )
-        catcher_x = -(catcher_width/2)
-    else if( catcher_x < -(catcher_width/2) )
-        catcher_x = windowWidth + catcher_width/2
-    
+    controlCatcher();
     displayStack();
 }
 
@@ -151,6 +130,27 @@ function displayStack() {
         burger_stack[i].y_pos = windowHeight - faller_height*i/3 - bottom_border_factor;
         burger_stack[i].display();
     }
+}
+
+// control catcher at the bottom on the screen
+// - listen for arrow keys
+// - listen for mouse movement
+// - wrap catcher around screen
+function controlCatcher() {
+    // control catcher with arrow keys
+    if(keyIsDown(LEFT_ARROW))
+        catcher_x -= 15
+    else if (keyIsDown(RIGHT_ARROW))
+        catcher_x += 15
+    
+    // allow catcher to wrap around the screen
+    if( catcher_x - catcher_width/2 > windowWidth )
+        catcher_x = -(catcher_width/2)
+    else if( catcher_x < -(catcher_width/2) )
+        catcher_x = windowWidth + catcher_width/2
+
+    // listen for mouse movement
+    onMouseMove(); 
 }
 
 // Allows catcher to be controlled by mouse when moved
