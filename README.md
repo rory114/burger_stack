@@ -1,2 +1,2 @@
-# p5.js
-# p5
+# Burger Stack
+Author: @rory114

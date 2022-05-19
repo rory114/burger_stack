@@ -1,3 +1,4 @@
+// movement variables
 let active_fallers = [];
 let burger_stack = [];
 let toppings_allowed = [];
@@ -6,15 +7,23 @@ let skip_frame_counter = 0;
 const faller_width = 100;
 const faller_height = 70;
 const catcher_width = 100;
-let bottom_border_factor = 20;
+let bottom_border_factor = 40;
 let catcher_x;
+
+// game aspect variables
+let score = 0;
+let current_order = [];
+let current_order_count = {};
+let min_order_toppings = 5;
+let max_order_toppings = 10;
 
 // toppings class to store height and width of each topping
 class Topping {
-    constructor(image, height, width) {
+    constructor(image, height, width, name) {
         this.image = image;
         this.height = height;
         this.width = width;
+        this.name = name;
     }
 }
 
@@ -65,28 +74,47 @@ class Faller {
     }
 }
 
-// load background image
 function preload() {
+
+    // load burger images
     lettuce_image = loadImage("images/lettuce_leaf.png");
     tomato_image = loadImage("images/tomato_slice.png");
     patty_image = loadImage("images/burger_patty.png");
     egg_image = loadImage("images/fried_egg.png");
     onion_image = loadImage("images/onion_slice.png");
+    cheese_image = loadImage("images/cheese_slice.png");
+    top_bun_image = loadImage("images/top_bun.png");
+    bottom_bun_image = loadImage("images/bottom_bun.png");
+
 }
 
-// set p5 canvas
 function setup() {
+    
+    // set p5 canvas
     createCanvas(windowWidth, windowHeight);
+    
+    // adjust framerate
     frameRate(30);
+
+    // place catcher in center of screen
     catcher_x = windowWidth / 2;
 
     // set up toppings array
-    toppings_allowed.push( new Topping(lettuce_image, faller_height, faller_width) );
-    toppings_allowed.push( new Topping(tomato_image, faller_height, faller_width) );
-    toppings_allowed.push( new Topping(patty_image, faller_height, faller_width) );
-    toppings_allowed.push( new Topping(egg_image, faller_height, faller_width) );
-    toppings_allowed.push( new Topping(onion_image, faller_height, faller_width) );
+    toppings_allowed.push( new Topping(lettuce_image, faller_height, faller_width, "lettuce") );
+    toppings_allowed.push( new Topping(tomato_image, faller_height, faller_width, "tomato") );
+    toppings_allowed.push( new Topping(patty_image, faller_height, faller_width, "patty") );
+    toppings_allowed.push( new Topping(egg_image, faller_height, faller_width, "egg") );
+    toppings_allowed.push( new Topping(onion_image, faller_height, faller_width, "onion") );
+    toppings_allowed.push( new Topping(cheese_image, faller_height, faller_width, "cheese") );
+    toppings_allowed.push( new Topping(top_bun_image, faller_width, faller_height, "top_bun") );
 
+    getOrder();
+
+    for( let j = 0; j < current_order.length; j++ ) {
+        console.log(current_order[j].name)
+    }
+
+    displayOrderToFill()
 }
 
 // call this function each new frame
@@ -97,6 +125,9 @@ function draw() {
 
     // run fallers and catcher
     runFallingStack();
+
+    // run and control game
+    runGame();
 }
 
 // function to add new Faller to sky
@@ -110,11 +141,9 @@ function addFaller() {
     let topping_index = Math.floor( Math.random()* toppings_allowed.length );
     let topping_to_add = toppings_allowed[topping_index];
 
-
     // create and add faller
     let faller_to_add = new Faller( x_pos, y_pos, y_speed, topping_to_add );
     active_fallers.push(faller_to_add);
-
 }
 
 // runs fallers and displays the stack
@@ -143,12 +172,12 @@ function runFallingStack() {
 // displays the faller stack
 function displayStack() {
     fill(0);
-    let catcher_size = 150;
-    rectMode(CENTER);
-    rect(catcher_x, windowHeight-bottom_border_factor/2, catcher_size, bottom_border_factor)
+    let catcher_size = 100;
+    imageMode(CENTER);
+    image(bottom_bun_image, catcher_x, windowHeight-bottom_border_factor/2, catcher_size, bottom_border_factor)
     for( let i = 0; i < burger_stack.length; i++ ) {
         burger_stack[i].x_pos = catcher_x;
-        burger_stack[i].y_pos = windowHeight - faller_height*i/3 - bottom_border_factor;
+        burger_stack[i].y_pos = windowHeight - burger_stack[i].topping.height * i/3 - bottom_border_factor;
         burger_stack[i].display();
     }
 }
@@ -175,7 +204,7 @@ function controlCatcher() {
 }
 
 // Allows catcher to be controlled by mouse when moved
-// uses arrowkeys otherwise otherwise
+// uses arrowkeys otherwise
 function onMouseMove() {
     var moved = false
     window.onmousemove = function(){
@@ -186,3 +215,63 @@ function onMouseMove() {
    }
 }
 
+function runGame() {
+
+    // display score
+    text("Score: " + score, windowWidth/2, windowHeight/2 )
+
+
+}
+
+function getOrder() {
+
+    // clear out old order
+    current_order = [];
+
+    // get random number of toppings between max and min
+    let number_of_toppings = Math.floor(Math.random()*(max_order_toppings - min_order_toppings) + min_order_toppings);
+
+    // fill order with random toppings
+    for( let i = 0; i < number_of_toppings; i++ ) {
+
+        // get random index of toppings_allowed
+        let random_topping_index = Math.floor(Math.random()*(toppings_allowed.length));
+        
+        // make sure chosen topping is not a top bun
+        // else add to current_order
+        if( toppings_allowed[random_topping_index].name == "top_bun" )
+            i--;
+        else
+            current_order.push(toppings_allowed[random_topping_index]);
+    }
+
+    // sort order by name
+    current_order.sort( (a,b) => {
+        if( a.name > b.name )
+            return 1
+        else 
+            return -1
+    });
+
+
+    // store current_order frequency for displaying
+    for( let i = 0; i < current_order.length; i++ ) {
+        if( current_order_count[current_order[i].name] )
+            current_order_count[current_order[i].name] += 1;
+        else
+            current_order_count[current_order[i].name] = 1;
+    }
+}
+
+function displayOrderToFill() {
+
+/*
+    for( let i = 0; i < current_order.length; i++ ) {
+        
+        // if current_order_map doesn't contain
+        if( !current_order_map.has(current_order[i].name) ) {
+            
+        }
+    }*/
+
+}
