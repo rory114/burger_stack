@@ -14,8 +14,10 @@ let catcher_x;
 let score = 0;
 let current_order = [];
 let current_order_count = {};
+let topping_image_access = {};
 let min_order_toppings = 5;
 let max_order_toppings = 10;
+
 
 // toppings class to store height and width of each topping
 class Topping {
@@ -101,13 +103,25 @@ function setup() {
 
     // set up toppings array
     toppings_allowed.push( new Topping(lettuce_image, faller_height, faller_width, "lettuce") );
+    topping_image_access["lettuce"] = lettuce_image;
     toppings_allowed.push( new Topping(tomato_image, faller_height, faller_width, "tomato") );
+    topping_image_access["tomato_image"] = tomato_image;
     toppings_allowed.push( new Topping(patty_image, faller_height, faller_width, "patty") );
+    topping_image_access["patty_image"] = patty_image;
     toppings_allowed.push( new Topping(egg_image, faller_height, faller_width, "egg") );
+    topping_image_access["egg_image"] = egg_image;
     toppings_allowed.push( new Topping(onion_image, faller_height, faller_width, "onion") );
+    topping_image_access["onion_image"] = onion_image;
     toppings_allowed.push( new Topping(cheese_image, faller_height, faller_width, "cheese") );
+    topping_image_access["cheese_image"] = cheese_image;
     toppings_allowed.push( new Topping(top_bun_image, faller_width, faller_height, "top_bun") );
+    topping_image_access["top_bun_image"] = top_bun_image;
 
+
+
+    /* FUCK AROUND ZONE */
+
+    
     getOrder();
 
     for( let j = 0; j < current_order.length; j++ ) {
@@ -115,6 +129,10 @@ function setup() {
     }
 
     displayOrderToFill()
+    
+
+    /* FUCK AROUND ZONE */
+
 }
 
 // call this function each new frame
@@ -223,12 +241,15 @@ function runGame() {
 
 }
 
+// fill current_order with new random order
+// fill current_order_count with frequency counts of current_order
+
 function getOrder() {
 
     // clear out old order
     current_order = [];
 
-    // get random number of toppings between max and min
+    // get random number of toppings between max_order_toppings and min_order_toppings
     let number_of_toppings = Math.floor(Math.random()*(max_order_toppings - min_order_toppings) + min_order_toppings);
 
     // fill order with random toppings
@@ -265,13 +286,10 @@ function getOrder() {
 
 function displayOrderToFill() {
 
-/*
-    for( let i = 0; i < current_order.length; i++ ) {
-        
-        // if current_order_map doesn't contain
-        if( !current_order_map.has(current_order[i].name) ) {
-            
-        }
-    }*/
+    // store width of one order item
+    let topping_order_width = windowWidth / current_order_count.length;
 
+    for( const topping in current_order_count ) {
+        console.log(current_order_count[topping])
+    }
 }
