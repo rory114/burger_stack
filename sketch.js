@@ -105,17 +105,17 @@ function setup() {
     toppings_allowed.push( new Topping(lettuce_image, faller_height, faller_width, "lettuce") );
     topping_image_access["lettuce"] = lettuce_image;
     toppings_allowed.push( new Topping(tomato_image, faller_height, faller_width, "tomato") );
-    topping_image_access["tomato_image"] = tomato_image;
+    topping_image_access["tomato"] = tomato_image;
     toppings_allowed.push( new Topping(patty_image, faller_height, faller_width, "patty") );
-    topping_image_access["patty_image"] = patty_image;
+    topping_image_access["patty"] = patty_image;
     toppings_allowed.push( new Topping(egg_image, faller_height, faller_width, "egg") );
-    topping_image_access["egg_image"] = egg_image;
+    topping_image_access["egg"] = egg_image;
     toppings_allowed.push( new Topping(onion_image, faller_height, faller_width, "onion") );
-    topping_image_access["onion_image"] = onion_image;
+    topping_image_access["onion"] = onion_image;
     toppings_allowed.push( new Topping(cheese_image, faller_height, faller_width, "cheese") );
-    topping_image_access["cheese_image"] = cheese_image;
+    topping_image_access["cheese"] = cheese_image;
     toppings_allowed.push( new Topping(top_bun_image, faller_width, faller_height, "top_bun") );
-    topping_image_access["top_bun_image"] = top_bun_image;
+    topping_image_access["top_bun"] = top_bun_image;
 
 
 
@@ -124,12 +124,11 @@ function setup() {
     
     getOrder();
 
+    console.log( "Order Toppings" )
     for( let j = 0; j < current_order.length; j++ ) {
         console.log(current_order[j].name)
     }
-
-    displayOrderToFill()
-    
+    console.log("")    
 
     /* FUCK AROUND ZONE */
 
@@ -238,7 +237,7 @@ function runGame() {
     // display score
     text("Score: " + score, windowWidth/2, windowHeight/2 )
 
-
+    displayOrderToFill()
 }
 
 // fill current_order with new random order
@@ -287,9 +286,13 @@ function getOrder() {
 function displayOrderToFill() {
 
     // store width of one order item
-    let topping_order_width = windowWidth / current_order_count.length;
+    let topping_order_width = windowWidth / Object.keys(current_order_count).length;
 
+    // display each topping
+    let i = 0;
     for( const topping in current_order_count ) {
-        console.log(current_order_count[topping])
+        text(current_order_count[topping] + " x ", (topping_order_width * i) + topping_order_width/2 - faller_width/2 - 20, faller_height)
+        image( topping_image_access[topping], (topping_order_width * i) + topping_order_width/2, faller_height, faller_width, faller_height );
+        i++;
     }
 }
