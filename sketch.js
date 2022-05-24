@@ -17,8 +17,7 @@ let current_order_count = {};
 let topping_image_access = {};
 let min_order_toppings = 5;
 let max_order_toppings = 10;
-let order_filled = false;
-
+let lives_left = 3;
 
 // toppings class to store height and width of each topping
 class Topping {
@@ -96,6 +95,12 @@ function topBunHit() {
         burger_stack_copy[i] = burger_stack[i].topping.name;
     }
     burger_stack_copy.sort();
+
+    // splice out top_bun to compare to order
+    burger_stack_copy.splice( burger_stack_copy.indexOf("top_bun") )
+
+    console.log(burger_stack_copy);
+
     
     // copy order and sort
     let current_order_copy = [];
@@ -103,9 +108,47 @@ function topBunHit() {
         current_order_copy[i] = current_order[i].name;
     }
     current_order_copy.sort();
+    console.log(current_order_copy);
+    
 
-    if( current_order_copy == burger_stack_copy )
-        console.log("FILLED")
+    // make sure stack and order are same length as preliminary check and to safely access each eleemnt
+    if( current_order_copy.length != burger_stack_copy.length )
+        orderNotFilled();
+    else {
+        // make sure each element matches
+        let order_filled = true;
+        for( let i = 0; i < burger_stack_copy.length; i++ ) {
+            if( burger_stack_copy[i] != current_order_copy[i]) {
+                orderNotFilled();
+                order_filled = false;
+                i = burger_stack_copy.length;
+            }
+        }
+
+        // if order is filled call orderFilled()
+        if( order_filled == true )
+            orderFilled()
+    }
+}
+
+
+// called when top bun is hit but order is not completed
+function orderNotFilled() {
+    lives_left--;
+    if(lives_left == 0) {
+        alert("you are not a good fry cook");
+        lives_left = 3;
+    }
+    burger_stack = [];
+    getOrder();
+}
+
+// called when top is hit and order is completed
+function orderFilled() {
+    console.log("ORDER FILLED")
+    burger_stack = [];
+    getOrder();
+    score++;
 }
 
 // checks if the given topping is the top bun
@@ -173,7 +216,7 @@ function setup() {
 
     /* FUCK AROUND ZONE */
 
-    //getOrder();
+    getOrder();
 
     /* FUCK AROUND ZONE */
 
@@ -212,7 +255,7 @@ function addFaller() {
 function runFallingStack() {
 
     // skip every XX frames and then add new faller
-    if( skip_frame_counter == 50 ) {
+    if( skip_frame_counter == 25 ) {
         addFaller();
         skip_frame_counter = 0
      } else {
@@ -282,17 +325,8 @@ function runGame() {
     // display score
     text("Score: " + score, 40, faller_height * 2 )
 
-    // if order is filled get new order
-    if( order_filled ) {
-        getOrder()
-        score++;
-    }
-
     // display current order to fill
     displayOrderToFill()
-
-    // check if order is filled
-    isOrderFilled()
 }
 
 // fill current_order with new random order
@@ -345,23 +379,16 @@ function displayOrderToFill() {
     }
 }
 
-function isOrderFilled() {
-    // loop through current_order_count and check
-    // that all counts are 0
-    order_filled = true;
-    for( const topping in current_order_count ) {
-        if( current_order_count[topping] != 0 )
-            order_filled = false;
-    }
-}
-
-
 // Reset burger stack and current_order_counts 
-function mousePressed() {
-    burger_stack = [];
+function keyPressed() {
 
-    // reset current_order_count to starting order
-    countOrderToppings();
+    if( key == ' ' ) {
+        burger_stack = [];
+
+
+        // reset current_order_count to starting order
+        countOrderToppings();
+    }
 }
 
 // takes the current order stored in current_order
@@ -370,9 +397,7 @@ function mousePressed() {
 function countOrderToppings() {
 
     // reset all values in current_order_count to 0
-    for( const topping in current_order_count ) {
-        current_order_count[topping] = 0;
-    }
+    current_order_count = {};
 
 
     // store current_order frequency in current_order_count
