@@ -2,13 +2,14 @@
 let active_fallers = [];
 let burger_stack = [];
 let toppings_allowed = [];
-let lettuce_image, tomato_image, patty_image, onion_image, egg_image;
+let lettuce_image, tomato_image, patty_image, onion_image, ketchup_image, mustard_image, pickles_image;
 let skip_frame_counter = 0;
 const faller_width = 100;
 const faller_height = 70;
 const catcher_width = 100;
 let bottom_border_factor = 40;
 let catcher_x;
+let condiment_count = 0;
 
 // game aspect variables
 let score = 0;
@@ -29,8 +30,8 @@ class Topping {
     }
 }
 
-// ellipise falling from top of the screen to the bottom    
-// random color, speed, and x cordinate assigned
+// topping falling from top of the screen to the bottom    
+// random topping, speed, and x cordinate assigned
 class Faller {
     constructor( x_pos, y_pos, y_speed, topping ) {
         this.x_pos = x_pos;
@@ -61,7 +62,7 @@ class Faller {
         // check x_pos value is with X pixels of catcher
         if( abs(this.x_pos - catcher_x) < this.topping.height/2 ) {
             // check y_pos value is within X pixels of catcher
-            let stack_height = burger_stack.length * this.topping.height * 1/3;
+            let stack_height = burger_stack.length * this.topping.height * 1/5 - condiment_count * 20;
             if( abs(this.y_pos - (windowHeight - bottom_border_factor - stack_height) ) < this.topping.height/2 ) {
                 // grab index of faller colliding
                 const index_of_faller = active_fallers.indexOf(this);
@@ -73,7 +74,7 @@ class Faller {
                 burger_stack.push(this);
 
                 // check if topping is top_bun
-                if(!checkIfTopBun(this.topping)) {
+                if(this.topping.name != "top_bun") {
                     // check if topping is in order
                     checkIfInOrder(this.topping)
                 } else {
@@ -95,20 +96,15 @@ function topBunHit() {
         burger_stack_copy[i] = burger_stack[i].topping.name;
     }
     burger_stack_copy.sort();
-
     // splice out top_bun to compare to order
     burger_stack_copy.splice( burger_stack_copy.indexOf("top_bun") )
 
-    console.log(burger_stack_copy);
-
-    
     // copy order and sort
     let current_order_copy = [];
     for( let i = 0; i < current_order.length; i++ ) {
         current_order_copy[i] = current_order[i].name;
     }
     current_order_copy.sort();
-    console.log(current_order_copy);
     
 
     // make sure stack and order are same length as preliminary check and to safely access each eleemnt
@@ -131,7 +127,6 @@ function topBunHit() {
     }
 }
 
-
 // called when top bun is hit but order is not completed
 function orderNotFilled() {
     lives_left--;
@@ -151,16 +146,6 @@ function orderFilled() {
     score++;
 }
 
-// checks if the given topping is the top bun
-// if so check if burger_stack matches order
-function checkIfTopBun( topping ) {
-    if( topping.name == "top_bun" ) {
-        return true
-    } else {
-        return false
-    }
-}
-
 // check if a given faller.topping is needed to complete the order
 // if so decrement the counter
 function checkIfInOrder( topping ) {
@@ -174,14 +159,16 @@ function checkIfInOrder( topping ) {
 function preload() {
 
     // load burger images
-    lettuce_image = loadImage("images/lettuce_leaf.png");
+    lettuce_image = loadImage("images/lettuce.png");
     tomato_image = loadImage("images/tomato_slice.png");
     patty_image = loadImage("images/burger_patty.png");
-    egg_image = loadImage("images/fried_egg.png");
-    onion_image = loadImage("images/onion_slice.png");
+    onion_image = loadImage("images/onions.png");
     cheese_image = loadImage("images/cheese_slice.png");
     top_bun_image = loadImage("images/top_bun.png");
     bottom_bun_image = loadImage("images/bottom_bun.png");
+    ketchup_image = loadImage("images/ketchup.png");
+    mustard_image = loadImage("images/mustard.png");
+    pickles_image = loadImage("images/pickles.png");
 
 }
 
@@ -203,15 +190,18 @@ function setup() {
     topping_image_access["tomato"] = tomato_image;
     toppings_allowed.push( new Topping(patty_image, faller_height, faller_width, "patty") );
     topping_image_access["patty"] = patty_image;
-    toppings_allowed.push( new Topping(egg_image, faller_height, faller_width, "egg") );
-    topping_image_access["egg"] = egg_image;
     toppings_allowed.push( new Topping(onion_image, faller_height, faller_width, "onion") );
     topping_image_access["onion"] = onion_image;
     toppings_allowed.push( new Topping(cheese_image, faller_height, faller_width, "cheese") );
     topping_image_access["cheese"] = cheese_image;
-    toppings_allowed.push( new Topping(top_bun_image, faller_width, faller_height, "top_bun") );
+    toppings_allowed.push( new Topping(top_bun_image, faller_height, faller_width, "top_bun") );
     topping_image_access["top_bun"] = top_bun_image;
-
+    toppings_allowed.push( new Topping(ketchup_image, faller_height, faller_width, "ketchup") );
+    topping_image_access["ketchup"] = ketchup_image;
+    toppings_allowed.push( new Topping(mustard_image, faller_height, faller_width, "mustard") );
+    topping_image_access["mustard"] = mustard_image;
+    toppings_allowed.push( new Topping(pickles_image, faller_height, faller_width, "pickle") );
+    topping_image_access["pickle"] = pickles_image;
 
 
     /* FUCK AROUND ZONE */
@@ -280,9 +270,17 @@ function displayStack() {
     let catcher_size = 100;
     imageMode(CENTER);
     image(bottom_bun_image, catcher_x, windowHeight-bottom_border_factor/2, catcher_size, bottom_border_factor)
+    condiment_count = 0;
+
     for( let i = 0; i < burger_stack.length; i++ ) {
         burger_stack[i].x_pos = catcher_x;
-        burger_stack[i].y_pos = windowHeight - burger_stack[i].topping.height * i/3 - bottom_border_factor;
+        
+        if(burger_stack[i].name == "ketchup" || burger_stack[i].name == "mustard" ) {
+            burger_stack[i].y_pos = windowHeight - burger_stack[i].topping.height * i/5 - bottom_border_factor - 20;
+            condiment_count++;
+        } else {
+            burger_stack[i].y_pos = windowHeight - burger_stack[i].topping.height * i/5 - bottom_border_factor;
+        }
         burger_stack[i].display();
     }
 }
@@ -303,9 +301,9 @@ function controlCatcher() {
         catcher_x = -(catcher_width/2)
     else if( catcher_x < -(catcher_width/2) )
         catcher_x = windowWidth + catcher_width/2
-
+    
     // listen for mouse movement
-    onMouseMove(); 
+    onMouseMove();
 }
 
 // Allows catcher to be controlled by mouse when moved
@@ -323,7 +321,7 @@ function onMouseMove() {
 function runGame() {
 
     // display score
-    text("Score: " + score, 40, faller_height * 2 )
+    text("Score: " + score, windowWidth  - 80, faller_height * 2 )
 
     // display current order to fill
     displayOrderToFill()
@@ -366,7 +364,6 @@ function getOrder() {
 }
 
 function displayOrderToFill() {
-
     // store width of one order item
     let topping_order_width = windowWidth / Object.keys(current_order_count).length;
 
@@ -381,11 +378,8 @@ function displayOrderToFill() {
 
 // Reset burger stack and current_order_counts 
 function keyPressed() {
-
     if( key == ' ' ) {
         burger_stack = [];
-
-
         // reset current_order_count to starting order
         countOrderToppings();
     }
