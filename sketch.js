@@ -172,7 +172,7 @@ function preload() {
     check_image = loadImage("images/guest_check.png");
     green_checkmark_image = loadImage("images/green_check.png");
     red_x_image = loadImage("images/red_X.png");
-    lives_image = loadImage("images/chef_kiss.png");
+    lives_image = loadImage("images/heart.png");
 
 }
 
@@ -383,7 +383,9 @@ function displayOrderToFill() {
 
     // display guest check
     imageMode(CORNER)
+    tint(255, 127)
     image( check_image, 0,0, 200, 400)
+    tint(255,255,255)
 
     // display each topping in order
     let i = 0, y_value;
