@@ -2,7 +2,7 @@
 let active_fallers = [];
 let burger_stack = [];
 let toppings_allowed = [];
-let lettuce_image, tomato_image, patty_image, onion_image, ketchup_image, mustard_image, pickles_image;
+let lettuce_image, tomato_image, patty_image, onion_image, ketchup_image, mustard_image, pickles_image, check_image, green_checkmark_image, red_x_image, lives_image;
 let skip_frame_counter = 0;
 const faller_width = 100;
 const faller_height = 70;
@@ -15,6 +15,7 @@ let condiment_count = 0;
 let score = 0;
 let current_order = [];
 let current_order_count = {};
+let starting_order_count = {};
 let topping_image_access = {};
 let min_order_toppings = 5;
 let max_order_toppings = 10;
@@ -120,7 +121,6 @@ function topBunHit() {
                 i = burger_stack_copy.length;
             }
         }
-
         // if order is filled call orderFilled()
         if( order_filled == true )
             orderFilled()
@@ -140,22 +140,22 @@ function orderNotFilled() {
 
 // called when top is hit and order is completed
 function orderFilled() {
-    console.log("ORDER FILLED")
     burger_stack = [];
     getOrder();
     score++;
 }
 
 // check if a given faller.topping is needed to complete the order
-// if so decrement the counter
+// if so decrement the current_order_count
 function checkIfInOrder( topping ) {
 
     // check if topping is needed
-    if( topping.name in current_order_count && current_order_count[topping.name] != 0) {
+    if( topping.name in current_order_count) {
         current_order_count[topping.name]--;
     }
 }
 
+// load images before start
 function preload() {
 
     // load burger images
@@ -169,9 +169,14 @@ function preload() {
     ketchup_image = loadImage("images/ketchup.png");
     mustard_image = loadImage("images/mustard.png");
     pickles_image = loadImage("images/pickles.png");
+    check_image = loadImage("images/guest_check.png");
+    green_checkmark_image = loadImage("images/green_check.png");
+    red_x_image = loadImage("images/red_X.png");
+    lives_image = loadImage("images/chef_kiss.png");
 
 }
 
+// create image_access_array, allowed toppings, place catcher
 function setup() {
     
     // set p5 canvas
@@ -275,7 +280,8 @@ function displayStack() {
     for( let i = 0; i < burger_stack.length; i++ ) {
         burger_stack[i].x_pos = catcher_x;
         
-        if(burger_stack[i].name == "ketchup" || burger_stack[i].name == "mustard" ) {
+        // move ketchup mustard and lettuce down 20 pixels for visual effect
+        if(burger_stack[i].name == "ketchup" || burger_stack[i].name == "mustard" || burger_stack[i].name == "lettuce" ) {
             burger_stack[i].y_pos = windowHeight - burger_stack[i].topping.height * i/5 - bottom_border_factor - 20;
             condiment_count++;
         } else {
@@ -320,16 +326,26 @@ function onMouseMove() {
 
 function runGame() {
 
-    // display score
-    text("Score: " + score, windowWidth  - 80, faller_height * 2 )
-
     // display current order to fill
     displayOrderToFill()
+
+    // display lives
+    displayLives()
+
+    // display score
+    text(score, 155, 380)
+}
+
+// display current number of lives
+function displayLives() {
+    for( let i = 0; i < lives_left; i++ ) {
+        imageMode(CENTER)
+        image(lives_image, 250 + 50*i, 40, 50, 50)
+    }
 }
 
 // fill current_order with new random order
 // fill current_order_count with frequency counts of current_order
-
 function getOrder() {
 
     // clear out old order
@@ -364,14 +380,37 @@ function getOrder() {
 }
 
 function displayOrderToFill() {
-    // store width of one order item
-    let topping_order_width = windowWidth / Object.keys(current_order_count).length;
 
-    // display each topping and topping count
-    let i = 0;
+    // display guest check
+    imageMode(CORNER)
+    image( check_image, 0,0, 200, 400)
+
+    // display each topping in order
+    let i = 0, y_value;
     for( const topping in current_order_count ) {
-        text(current_order_count[topping] + " x ", (topping_order_width * i) + topping_order_width/2 - faller_width/2 - 20, faller_height)
-        image( topping_image_access[topping], (topping_order_width * i) + topping_order_width/2, faller_height, faller_width, faller_height );
+        y_value = 125 + i * 17
+
+        // total topping in order
+        text(starting_order_count[topping], 20, y_value)
+
+        // toppings name
+        text( topping, 40, y_value );
+
+        // display topping left to get / green or red icon
+        imageMode(CENTER)
+        if( current_order_count[topping] > 0 ) {
+            text(current_order_count[topping], 176, y_value)
+        } else if ( current_order_count[topping] == 0 ) {
+            // correct amount toppings
+            image(green_checkmark_image, 185, y_value - 8, 20, 20);
+        } else {
+            // too many toppings
+            image(red_x_image, 184, y_value - 6, 15, 15);
+        }
+
+        // toppings icon
+        image(topping_image_access[topping], 135, y_value-8, 20,20)
+    
         i++;
     }
 }
@@ -390,15 +429,19 @@ function keyPressed() {
 // of current_order_count
 function countOrderToppings() {
 
-    // reset all values in current_order_count to 0
+    // reset all values in current_order_count & starting_order_count to 0
     current_order_count = {};
-
+    starting_order_count = {};
 
     // store current_order frequency in current_order_count
     for( let i = 0; i < current_order.length; i++ ) {
-        if( current_order_count[current_order[i].name] )
+        if( current_order_count[current_order[i].name] && starting_order_count[current_order[i].name]) {
             current_order_count[current_order[i].name] += 1;
-        else
+            starting_order_count[current_order[i].name] += 1;            
+        }
+        else {
             current_order_count[current_order[i].name] = 1;
+            starting_order_count[current_order[i].name] = 1;
+        }
     }
 }
