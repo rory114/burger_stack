@@ -2,7 +2,9 @@
 let active_fallers = [];
 let burger_stack = [];
 let toppings_allowed = [];
-let lettuce_image, tomato_image, patty_image, onion_image, ketchup_image, mustard_image, pickles_image, check_image, green_checkmark_image, red_x_image, lives_image;
+let enemies_allowed = [];
+let fallers_allowed = [];
+let lettuce_image, tomato_image, patty_image, onion_image, ketchup_image, mustard_image, pickles_image, check_image, green_checkmark_image, red_x_image, lives_image, boot_image, boombox_image, anchor_image, deadfish_image;
 let skip_frame_counter = 0;
 const faller_width = 100;
 const faller_height = 70;
@@ -74,13 +76,17 @@ class Faller {
                 // add topping to stack
                 burger_stack.push(this);
 
-                // check if topping is top_bun
-                if(this.topping.name != "top_bun") {
+                // check if faller is in enemies_allowed
+                if( enemies_allowed.includes( this.topping ) ) {
+                    lostLife()
+                } else if(this.topping.name != "top_bun") { // check that faller is not top_bun
                     // check if topping is in order
                     checkIfInOrder(this.topping)
+
+                    // TODO:
+                    // What to do if not in order? - add to guest check in red
                 } else {
                     // topping is top bun
-                    // execute end function
                     topBunHit();
                 }
             }
@@ -110,13 +116,13 @@ function topBunHit() {
 
     // make sure stack and order are same length as preliminary check and to safely access each eleemnt
     if( current_order_copy.length != burger_stack_copy.length )
-        orderNotFilled();
+    lostLife();
     else {
         // make sure each element matches
         let order_filled = true;
         for( let i = 0; i < burger_stack_copy.length; i++ ) {
             if( burger_stack_copy[i] != current_order_copy[i]) {
-                orderNotFilled();
+                lostLife();
                 order_filled = false;
                 i = burger_stack_copy.length;
             }
@@ -127,8 +133,9 @@ function topBunHit() {
     }
 }
 
-// called when top bun is hit but order is not completed
-function orderNotFilled() {
+
+// decreases lives_left by one - once 0 alerts
+function lostLife() {
     lives_left--;
     if(lives_left == 0) {
         alert("you are not a good fry cook");
@@ -169,16 +176,29 @@ function preload() {
     ketchup_image = loadImage("images/ketchup.png");
     mustard_image = loadImage("images/mustard.png");
     pickles_image = loadImage("images/pickles.png");
+
+    // load guest check and check marks
     check_image = loadImage("images/guest_check.png");
     green_checkmark_image = loadImage("images/green_check.png");
     red_x_image = loadImage("images/red_X.png");
+
+    // load lives
     lives_image = loadImage("images/heart.png");
+
+    // load enemies
+    boot_image = loadImage("images/boot.png")
+    boombox_image = loadImage("images/boombox.png")
+    anchor_image = loadImage("images/anchor.png")
+    deadfish_image = loadImage("images/dead_fish.png")
 
 }
 
 // create image_access_array, allowed toppings, place catcher
 function setup() {
     
+
+    console.log(getDeviceType());
+
     // set p5 canvas
     createCanvas(windowWidth, windowHeight);
     
@@ -208,12 +228,18 @@ function setup() {
     toppings_allowed.push( new Topping(pickles_image, faller_height, faller_width, "pickle") );
     topping_image_access["pickle"] = pickles_image;
 
+    // set up enemies array
+    enemies_allowed.push( new Topping( anchor_image, faller_height, faller_width, "anchor" ) );
+    enemies_allowed.push( new Topping( boombox_image, faller_height, faller_width, "boombox" ) );
+    enemies_allowed.push( new Topping( boot_image, faller_height, faller_width, "boot" ) );
+    enemies_allowed.push( new Topping( deadfish_image, faller_height, faller_width, "deadfish" ) );
 
-    /* FUCK AROUND ZONE */
 
+    // store toppings_allowed and enemies_allowed in one array for all fallers
+    fallers_allowed = toppings_allowed.concat(  enemies_allowed );
+
+    // get first order
     getOrder();
-
-    /* FUCK AROUND ZONE */
 
 }
 
@@ -238,11 +264,11 @@ function addFaller() {
     let y_speed = Math.floor( Math.random()* 7) + 3;
     
     // grab random topping
-    let topping_index = Math.floor( Math.random()* toppings_allowed.length );
-    let topping_to_add = toppings_allowed[topping_index];
+    let faller_index = Math.floor( Math.random()* fallers_allowed.length );
+    let faller_item_to_add = fallers_allowed[faller_index];
 
     // create and add faller
-    let faller_to_add = new Faller( x_pos, y_pos, y_speed, topping_to_add );
+    let faller_to_add = new Faller( x_pos, y_pos, y_speed, faller_item_to_add );
     active_fallers.push(faller_to_add);
 }
 
@@ -365,7 +391,7 @@ function getOrder() {
         if( toppings_allowed[random_topping_index].name == "top_bun" )
             i--;
         else
-            current_order.push(toppings_allowed[random_topping_index]);
+            current_order.push(toppings_allowed[random_topping_index])
     }
 
     // sort order by name
@@ -447,3 +473,18 @@ function countOrderToppings() {
         }
     }
 }
+
+const getDeviceType = () => {
+    const ua = navigator.userAgent;
+    if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
+      return "tablet";
+    }
+    if (
+      /Mobile|iP(hone|od)|Android|BlackBerry|IEMobile|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(
+        ua
+      )
+    ) {
+      return "mobile";
+    }
+    return "desktop";
+  };
