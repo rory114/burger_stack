@@ -14,7 +14,7 @@ let catcher_x;
 let condiment_count = 0;
 
 // game aspect variables
-let score = 0;
+let score = 10;
 let current_order = [];
 let current_order_count = {};
 let starting_order_count = {};
@@ -84,6 +84,8 @@ class Faller {
                     checkIfInOrder(this.topping)
 
                     // TODO:
+                    
+
                     // What to do if not in order? - add to guest check in red
                 } else {
                     // topping is top bun
@@ -133,7 +135,6 @@ function topBunHit() {
     }
 }
 
-
 // decreases lives_left by one - once 0 alerts
 function lostLife() {
     lives_left--;
@@ -154,11 +155,14 @@ function orderFilled() {
 
 // check if a given faller.topping is needed to complete the order
 // if so decrement the current_order_count
+// if not take loss life
 function checkIfInOrder( topping ) {
 
     // check if topping is needed
     if( topping.name in current_order_count) {
         current_order_count[topping.name]--;
+    } else {
+        lostLife();
     }
 }
 
@@ -195,10 +199,6 @@ function preload() {
 
 // create image_access_array, allowed toppings, place catcher
 function setup() {
-    
-
-    console.log(getDeviceType());
-
     // set p5 canvas
     createCanvas(windowWidth, windowHeight);
     
@@ -350,6 +350,7 @@ function onMouseMove() {
    }
 }
 
+// run scoring and order aspects of game
 function runGame() {
 
     // display current order to fill
@@ -405,41 +406,44 @@ function getOrder() {
     countOrderToppings()
 }
 
+// display order on check
 function displayOrderToFill() {
 
-    // display guest check
-    imageMode(CORNER)
-    tint(255, 127)
-    image( check_image, 0,0, 200, 400)
-    tint(255,255,255)
+    if( getDeviceType() == "desktop" ) {
+        // display guest check
+        imageMode(CORNER)
+        tint(255, 127)
+        image( check_image, 0,0, 200, 400)
+        tint(255,255,255)
 
-    // display each topping in order
-    let i = 0, y_value;
-    for( const topping in current_order_count ) {
-        y_value = 125 + i * 17
+        // display each topping in order
+        let i = 0, y_value;
+        for( const topping in current_order_count ) {
+            y_value = 125 + i * 17
 
-        // total topping in order
-        text(starting_order_count[topping], 20, y_value)
+            // total topping in order
+            text(starting_order_count[topping], 20, y_value)
 
-        // toppings name
-        text( topping, 40, y_value );
+            // toppings name
+            text( topping, 40, y_value );
 
-        // display topping left to get / green or red icon
-        imageMode(CENTER)
-        if( current_order_count[topping] > 0 ) {
-            text(current_order_count[topping], 176, y_value)
-        } else if ( current_order_count[topping] == 0 ) {
-            // correct amount toppings
-            image(green_checkmark_image, 185, y_value - 8, 20, 20);
-        } else {
-            // too many toppings
-            image(red_x_image, 184, y_value - 6, 15, 15);
-        }
+            // display topping left to get / green or red icon
+            imageMode(CENTER)
+            if( current_order_count[topping] > 0 ) {
+                text(current_order_count[topping], 176, y_value)
+            } else if ( current_order_count[topping] == 0 ) {
+                // correct amount toppings
+                image(green_checkmark_image, 185, y_value - 8, 20, 20);
+            } else {
+                // too many toppings
+                image(red_x_image, 184, y_value - 6, 15, 15);
+            }
 
-        // toppings icon
-        image(topping_image_access[topping], 135, y_value-8, 20,20)
-    
-        i++;
+            // toppings icon
+            image(topping_image_access[topping], 135, y_value-8, 20,20)
+        
+            i++;
+        }   
     }
 }
 
@@ -474,6 +478,8 @@ function countOrderToppings() {
     }
 }
 
+// taken from Long Leopard
+// https://www.codegrepper.com/code-examples/javascript/javascript+get+device+type
 const getDeviceType = () => {
     const ua = navigator.userAgent;
     if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
