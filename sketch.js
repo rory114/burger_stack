@@ -444,7 +444,47 @@ function displayOrderToFill() {
         
             i++;
         }   
+    } else {
+        displayOrderToFillMobile()
     }
+}
+
+// display menu for mobile compatability
+// strectch to fight screen
+function displayOrderToFillMobile() {
+    // display guest check
+    imageMode(CORNER)
+    tint(255, 127)
+    image( check_image, 0,0, windowWidth, windowHeight)
+    tint(255,255,255)
+
+    // display each topping in order
+    let i = 0, y_value;
+    for( const topping in current_order_count ) {
+        y_value = 125 + i * 17
+
+        // total topping in order
+        text(starting_order_count[topping], 20, y_value)
+
+        // toppings name
+        text( topping, 40, y_value );
+
+         // display topping left to get / green or red icon
+         imageMode(CENTER)
+         if( current_order_count[topping] > 0 ) {
+             text(current_order_count[topping], 176, y_value)
+         } else if ( current_order_count[topping] == 0 ) {
+             // correct amount toppings
+             image(green_checkmark_image, 185, y_value - 8, 20, 20);
+         } else {
+             // too many toppings
+             image(red_x_image, 184, y_value - 6, 15, 15);
+         }
+         // toppings icon
+         image(topping_image_access[topping], 135, y_value-8, 20,20)
+        
+         i++;
+        }   
 }
 
 // Reset burger stack and current_order_counts 
