@@ -249,11 +249,11 @@ function draw() {
     // clear canvas
     clear();
 
-    // run fallers and catcher
-    runFallingStack();
-
     // run and control game
     runGame();
+
+    // run fallers and catcher
+    runFallingStack();
 }
 
 // function to add new Faller to sky
@@ -360,14 +360,15 @@ function runGame() {
     displayLives()
 
     // display score
-    text(score, 155, 380)
+    //text(score, 155, 380)
 }
 
 // display current number of lives
 function displayLives() {
+    let life_size = (windowHeight*windowWidth) / 19000
     for( let i = 0; i < lives_left; i++ ) {
         imageMode(CENTER)
-        image(lives_image, 250 + 50*i, 40, 50, 50)
+        image(lives_image, 250 + 50*i, 40, life_size, life_size)
     }
 }
 
@@ -459,32 +460,38 @@ function displayOrderToFillMobile() {
     tint(255,255,255)
 
     // display each topping in order
-    let i = 0, y_value;
+    let i = 0, y_value, toppings_left_coord;
+    let initial_y_cord = windowHeight/3.3
+    let initial_x_cord = windowWidth / 12
     for( const topping in current_order_count ) {
-        y_value = 125 + i * 17
+        y_value = initial_y_cord + i * windowHeight/23.5
+
+        textSize( 18 )
 
         // total topping in order
-        text(starting_order_count[topping], 20, y_value)
+        text(starting_order_count[topping], initial_x_cord, y_value)
 
         // toppings name
-        text( topping, 40, y_value );
+        text( topping, windowWidth*(8/50), y_value );
 
-         // display topping left to get / green or red icon
-         imageMode(CENTER)
-         if( current_order_count[topping] > 0 ) {
-             text(current_order_count[topping], 176, y_value)
-         } else if ( current_order_count[topping] == 0 ) {
-             // correct amount toppings
-             image(green_checkmark_image, 185, y_value - 8, 20, 20);
-         } else {
-             // too many toppings
-             image(red_x_image, 184, y_value - 6, 15, 15);
+        // display topping left to get / green or red icon
+        imageMode(CENTER)
+        toppings_left_coord = initial_x_cord + windowWidth *(5/6)
+        if( current_order_count[topping] > 0 ) {
+            text(current_order_count[topping], toppings_left_coord, y_value)
+        } else if ( current_order_count[topping] == 0 ) {
+            // correct amount toppings
+            image(green_checkmark_image, toppings_left_coord, y_value - 8, 20, 20);
+        } else {
+            // too many toppings
+            image(red_x_image, toppings_left_coord, y_value - 6, 15, 15);
          }
-         // toppings icon
-         image(topping_image_access[topping], 135, y_value-8, 20,20)
+        // toppings icon
+        image(topping_image_access[topping], windowWidth*(3.2/4), y_value-8, windowWidth/20,windowWidth/20)
         
-         i++;
-        }   
+        i++;
+    }
+    textSize(12) 
 }
 
 // Reset burger stack and current_order_counts 
