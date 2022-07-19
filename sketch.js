@@ -4,7 +4,7 @@ let burger_stack = [];
 let toppings_allowed = [];
 let enemies_allowed = [];
 let fallers_allowed = [];
-let lettuce_image, tomato_image, patty_image, onion_image, ketchup_image, mustard_image, pickles_image, check_image, green_checkmark_image, red_x_image, lives_image, boot_image, boombox_image, anchor_image, deadfish_image;
+let lettuce_image, tomato_image, patty_image, onion_image, ketchup_image, mustard_image, pickles_image, check_image, lives_image, boot_image, boombox_image, anchor_image, deadfish_image;
 let skip_frame_counter = 0;
 const faller_width = 100;
 const faller_height = 70;
@@ -12,6 +12,7 @@ const catcher_width = 100;
 let bottom_border_factor = 40;
 let catcher_x;
 let condiment_count = 0;
+let deviceType;
 
 // game aspect variables
 let score = 10;
@@ -181,10 +182,8 @@ function preload() {
     mustard_image = loadImage("images/mustard.png");
     pickles_image = loadImage("images/pickles.png");
 
-    // load guest check and check marks
+    // load guest check
     check_image = loadImage("images/guest_check.png");
-    green_checkmark_image = loadImage("images/green_check.png");
-    red_x_image = loadImage("images/red_X.png");
 
     // load lives
     lives_image = loadImage("images/heart.png");
@@ -237,6 +236,12 @@ function setup() {
 
     // store toppings_allowed and enemies_allowed in one array for all fallers
     fallers_allowed = toppings_allowed.concat(  enemies_allowed );
+
+    // set device type
+    deviceType = getDeviceType();
+
+    // set font
+    textFont("Bradley Hand")
 
     // get first order
     getOrder();
@@ -360,15 +365,26 @@ function runGame() {
     displayLives()
 
     // display score
-    //text(score, 155, 380)
+    displayScore()
+}
+
+// display score
+function displayScore() {
+    text(score, 155, 380)
 }
 
 // display current number of lives
 function displayLives() {
     let life_size = (windowHeight*windowWidth) / 19000
-    for( let i = 0; i < lives_left; i++ ) {
-        imageMode(CENTER)
-        image(lives_image, 250 + 50*i, 40, life_size, life_size)
+    imageMode(CENTER)
+    if( deviceType == "desktop" ) {
+        for( let i = 0; i < lives_left; i++ ) {
+            image(lives_image, 250 + 50*i, 40, life_size, life_size)
+        }
+    } else {
+        for( let i = 0; i < lives_left; i++ ) {
+            image(lives_image, windowWidth/9.4 + (life_size + windowWidth/100) * i, windowHeight/4, life_size, life_size)
+        }        
     }
 }
 
@@ -410,7 +426,7 @@ function getOrder() {
 // display order on check
 function displayOrderToFill() {
 
-    if( getDeviceType() == "desktop" ) {
+    if( deviceType == "desktop" ) {
         // display guest check
         imageMode(CORNER)
         tint(255, 127)
@@ -420,31 +436,24 @@ function displayOrderToFill() {
         // display each topping in order
         let i = 0, y_value;
         for( const topping in current_order_count ) {
-            y_value = 125 + i * 17
+            y_value = 125 + i * 17 
 
             // total topping in order
             text(starting_order_count[topping], 20, y_value)
 
             // toppings name
             text( topping, 40, y_value );
-
-            // display topping left to get / green or red icon
+            
+            // display topping left to get
             imageMode(CENTER)
-            if( current_order_count[topping] > 0 ) {
-                text(current_order_count[topping], 176, y_value)
-            } else if ( current_order_count[topping] == 0 ) {
-                // correct amount toppings
-                image(green_checkmark_image, 185, y_value - 8, 20, 20);
-            } else {
-                // too many toppings
-                image(red_x_image, 184, y_value - 6, 15, 15);
-            }
+            text(current_order_count[topping], 176, y_value)           
 
+            
             // toppings icon
             image(topping_image_access[topping], 135, y_value-8, 20,20)
         
             i++;
-        }   
+        }  
     } else {
         displayOrderToFillMobile()
     }
@@ -466,7 +475,7 @@ function displayOrderToFillMobile() {
     for( const topping in current_order_count ) {
         y_value = initial_y_cord + i * windowHeight/23.5
 
-        textSize( 18 )
+        textSize(40)
 
         // total topping in order
         text(starting_order_count[topping], initial_x_cord, y_value)
@@ -474,20 +483,13 @@ function displayOrderToFillMobile() {
         // toppings name
         text( topping, windowWidth*(8/50), y_value );
 
-        // display topping left to get / green or red icon
+        // display topping left to get
         imageMode(CENTER)
         toppings_left_coord = initial_x_cord + windowWidth *(5/6)
-        if( current_order_count[topping] > 0 ) {
-            text(current_order_count[topping], toppings_left_coord, y_value)
-        } else if ( current_order_count[topping] == 0 ) {
-            // correct amount toppings
-            image(green_checkmark_image, toppings_left_coord, y_value - 8, 20, 20);
-        } else {
-            // too many toppings
-            image(red_x_image, toppings_left_coord, y_value - 6, 15, 15);
-         }
+        text(current_order_count[topping], toppings_left_coord, y_value)
+
         // toppings icon
-        image(topping_image_access[topping], windowWidth*(3.2/4), y_value-8, windowWidth/20,windowWidth/20)
+        image(topping_image_access[topping], windowWidth*(3.2/4), y_value-8, windowWidth/15,windowWidth/15)
         
         i++;
     }
